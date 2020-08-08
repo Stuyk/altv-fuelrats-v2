@@ -20,7 +20,9 @@ function playerAuthDone(player, discordInfo) {
     );
 
     player.isAuthorized = true;
-    player.setSyncedMeta('Name', `${discordInfo.username}#${discordInfo.discriminator}`);
+    player.setSyncedMeta('NAME', `${discordInfo.username}#${discordInfo.discriminator}`);
     player.setSyncedMeta('Ready', false);
+
+    alt.emit('nametags:Config', player, true, false, false, 100);
     alt.emit('gamestate:SetupPlayer', player);
 }

@@ -95,6 +95,7 @@ function spawnPlayer(player) {
     );
 
     player.setIntoVehicle(player.lastVehicle);
+    player.setSyncedMeta('Ready', true);
 }
 
 resetMap();

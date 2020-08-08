@@ -3,6 +3,7 @@ import alt from 'alt-client';
 import * as native from 'natives';
 
 import '/client/panels/chat';
+import '/client/panels/vehicleSelection';
 
 // Systems
 import '/client/systems/playerSyncedMeta';

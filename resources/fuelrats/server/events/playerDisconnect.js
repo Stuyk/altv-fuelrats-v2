@@ -4,5 +4,7 @@ import alt from 'alt-server';
 alt.on('playerDisconnect', playerDisconnect);
 
 function playerDisconnect(player) {
-    // handle disconnect stuff
+    if (player.vehicle && player.vehicle.valid) {
+        player.vehicle.destroy();
+    }
 }
