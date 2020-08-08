@@ -9,6 +9,10 @@ function playerEnterVehicle(player, vehicle) {
     }
 
     alt.setTimeout(() => {
+        if (!vehicle || !vehicle.valid) {
+            return;
+        }
+
         vehicle.engineOn = true;
     }, 500);
 }

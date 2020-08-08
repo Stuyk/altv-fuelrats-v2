@@ -6,6 +6,7 @@ import '/client/panels/chat';
 import '/client/panels/vehicleSelection';
 
 // Systems
+import '/client/systems/collision';
 import '/client/systems/playerSyncedMeta';
 import '/client/systems/vehicle';
 

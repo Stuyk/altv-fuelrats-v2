@@ -58,7 +58,7 @@ function chatSend(player, msg) {
         return;
     }
 
-    const actualName = player.getSyncedMeta('Name');
+    const actualName = player.getSyncedMeta('NAME');
     alt.log(`[Message] ${actualName}: ${msg}`);
 
     // Cleanse Message

@@ -9,6 +9,10 @@ function playerLeftVehicle(player) {
         return;
     }
 
+    if (!player.getSyncedMeta('Ready')) {
+        return;
+    }
+
     if (!player.lastVehicle) {
         handleSetupPlayer(player);
         return;

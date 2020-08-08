@@ -11,7 +11,7 @@ function playerConnect(player) {
 
 function playerAuthDone(player, discordInfo) {
     // Initial Setup
-    player.dimension = player.id;
+    player.dimension = player.id + 5;
     player.model = 'mp_m_freemode_01';
     player.spawn(
         DEFAULT_CONFIG.VEHICLE_SELECT_SPAWN.x,
@@ -20,8 +20,9 @@ function playerAuthDone(player, discordInfo) {
     );
 
     player.isAuthorized = true;
-    player.setSyncedMeta('NAME', `${discordInfo.username}#${discordInfo.discriminator}`);
+    player.setSyncedMeta('NAME', `(${player.id}) ${discordInfo.username}#${discordInfo.discriminator}`);
     player.setSyncedMeta('Ready', false);
+    player.setDateTime(0, 0, 0, 1, 0, 0);
 
     alt.emit('nametags:Config', player, true, false, false, 100);
     alt.emit('gamestate:SetupPlayer', player);
