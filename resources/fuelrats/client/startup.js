@@ -9,6 +9,9 @@ import '/client/panels/vehicleSelection';
 import '/client/systems/collision';
 import '/client/systems/playerSyncedMeta';
 import '/client/systems/vehicle';
+import '/client/systems/audio';
 
 // You won't see this unless you're in-game.
-alt.log('The resource has now started client-sided. Poggers');
+alt.onServer('print', msg => {
+    alt.log(msg);
+});

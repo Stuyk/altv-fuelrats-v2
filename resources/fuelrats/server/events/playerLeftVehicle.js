@@ -13,6 +13,10 @@ function playerLeftVehicle(player) {
         return;
     }
 
+    if (player.disconnected) {
+        return;
+    }
+
     if (!player.lastVehicle) {
         handleSetupPlayer(player);
         return;

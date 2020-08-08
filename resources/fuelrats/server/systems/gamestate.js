@@ -5,6 +5,7 @@ import { distance } from '../utility/vector';
 
 alt.setInterval(handleUpdates, 5);
 alt.on('gamestate:SetupPlayer', handleSetupPlayer);
+alt.on('playerDisconnect', playerDisconnect);
 alt.onClient('gamestate:SelectVehicle', handleSelectVehicle);
 alt.onClient('gamestate:Collide', handleVehicleColliison);
 
@@ -28,12 +29,11 @@ let canisterInfo = {
     spawn: currentMapInfo.spawn
 };
 
-let validPlayers = [];
-
 function nextMap() {
     currentMapIndex += 1;
+    currentScoreCount = 0;
 
-    if (currentMapIndex > DEFAULT_CONFIG.MAPS.length) {
+    if (currentMapIndex >= DEFAULT_CONFIG.MAPS.length) {
         currentMapIndex = 0;
     }
 
@@ -43,7 +43,6 @@ function nextMap() {
 
 function resetMap() {
     currentScoreCount = 0;
-    validPlayers = [];
 
     const currentPlayers = alt.Player.all.filter(p => {
         if (p.isAuthorized) {
@@ -86,7 +85,14 @@ function setupObjective() {
 
     alt.setTimeout(() => {
         canisterInfo.release = true;
-    }, 5000);
+
+        for (let i = 0; i < currentPlayers.length; i++) {
+            const player = currentPlayers[i];
+            if (!player || !player.valid) {
+                continue;
+            }
+        }
+    }, 3000);
 
     paused = false;
 }
@@ -106,7 +112,6 @@ export function handleSetupPlayer(player) {
     player.setSyncedMeta('Selection', true);
 
     player.pos = DEFAULT_CONFIG.VEHICLE_SELECT_SPAWN;
-    player.dimension = player.id;
 
     if (player.lastVehicle && player.lastVehicle.valid && player.lastVehicle.destroy) {
         player.lastVehicle.destroy();
@@ -208,6 +213,13 @@ function handlePickup(player) {
             back: false,
             front: false
         };
+
+        alt.emitClient(
+            canisterInfo.owner,
+            'audio:PlayFrontend',
+            'Zone_Enemy_Capture',
+            'DLC_Apartments_Drop_Zone_Sounds'
+        );
     }
 
     canisterInfo.pos = player.pos;
@@ -220,8 +232,9 @@ function handlePickup(player) {
         back: true,
         front: true
     };
-
     player.vehicle.neonColor = { r: 190, g: 110, b: 255, a: 255 };
+
+    alt.emitClient(player, 'audio:PlayFrontend', 'Zone_Team_Capture', 'DLC_Apartments_Drop_Zone_Sounds');
 
     const currentPlayers = alt.Player.all.filter(p => {
         if (p.getSyncedMeta('Ready')) {
@@ -257,6 +270,7 @@ function handleUpdates() {
 
     for (let i = 0; i < currentPlayers.length; i++) {
         const player = currentPlayers[i];
+        player.lastLocation = { ...player.pos };
 
         // Handle pickup from ground
         if (canisterInfo.owner === null) {
@@ -271,11 +285,24 @@ function handleUpdates() {
         if (canisterInfo.owner === player) {
             canisterInfo.pos = player.pos;
 
+            if (player.pos.z <= -1) {
+                setupObjective();
+                break;
+            }
+
             const dist = distance(player.vehicle.pos, canisterInfo.goal);
             if (dist <= 5 && nextCanisterPickup < Date.now()) {
                 nextCanisterPickup = Date.now() + 500;
-                player.send(`You scored.`);
-                setupObjective();
+                currentScoreCount += 1;
+
+                alt.emitClient(null, 'audio:PlayFrontend', 'Whistle', 'DLC_TG_Running_Back_Sounds');
+
+                if (currentScoreCount >= 2) {
+                    currentScoreCount = 0;
+                    nextMap();
+                } else {
+                    setupObjective();
+                }
             }
         }
 
@@ -284,6 +311,23 @@ function handleUpdates() {
         player.setSyncedMeta('Position', player.pos);
         player.setSyncedMeta('Canister', canisterInfo);
     }
+}
+
+function playerDisconnect(player) {
+    alt.emitClient(null, 'player:RemoveBlip', player);
+
+    if (canisterInfo.owner !== player) {
+        return;
+    }
+
+    if (!player.lastLocation) {
+        setupObjective();
+        alt.emitClient(null, 'audio:PlayFrontend', 'Whistle', 'DLC_TG_Running_Back_Sounds');
+        return;
+    }
+
+    canisterInfo.owner = null;
+    canisterInfo.pos = player.lastLocation;
 }
 
 resetMap();

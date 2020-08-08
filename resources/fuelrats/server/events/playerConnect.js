@@ -7,22 +7,23 @@ alt.on('discord:AuthDone', playerAuthDone);
 
 function playerConnect(player) {
     alt.emit('discord:BeginAuth', player);
+    player.dimension = player.id + 5;
+    player.setSyncedMeta('FadeScreen', true);
+    player.setSyncedMeta('Frozen', true);
 }
 
 function playerAuthDone(player, discordInfo) {
-    // Initial Setup
-    player.dimension = player.id + 5;
     player.model = 'mp_m_freemode_01';
     player.spawn(
         DEFAULT_CONFIG.VEHICLE_SELECT_SPAWN.x,
         DEFAULT_CONFIG.VEHICLE_SELECT_SPAWN.y,
-        DEFAULT_CONFIG.VEHICLE_SELECT_SPAWN.z
+        DEFAULT_CONFIG.VEHICLE_SELECT_SPAWN.z - 10
     );
 
     player.isAuthorized = true;
     player.setSyncedMeta('NAME', `(${player.id}) ${discordInfo.username}#${discordInfo.discriminator}`);
     player.setSyncedMeta('Ready', false);
-    player.setDateTime(0, 0, 0, 1, 0, 0);
+    player.setDateTime(0, 0, 0, 9, 0, 0);
 
     alt.emit('nametags:Config', player, true, false, false, 100);
     alt.emit('gamestate:SetupPlayer', player);

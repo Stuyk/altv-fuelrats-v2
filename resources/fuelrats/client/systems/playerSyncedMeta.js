@@ -3,6 +3,7 @@ import alt from 'alt-client';
 import * as native from 'natives';
 import { turnOnVehiclePicker, turnOffVehiclePicker } from '../panels/vehicleSelection';
 import { drawMarker } from '../utility/markers';
+import { drawText2d } from '../utility/textdraws';
 
 alt.onServer('player:RemoveBlip', removeBlip);
 
@@ -14,7 +15,9 @@ let canisterBlip;
 let canisterGoalBlip;
 let canisterInfo;
 let homeBlip;
+let releaseEndTime = null;
 let nextCollisionCheck = Date.now() + 1000;
+let nextProfileCheck = Date.now() + 1000;
 
 native.requestModel(canisterModel);
 
@@ -88,6 +91,30 @@ function handleVehicleSelection(value) {
 function handleCanister(value) {
     if (!alt.Player.local.getSyncedMeta('Ready')) {
         return;
+    }
+
+    if (!value.release && !releaseEndTime) {
+        releaseEndTime = Date.now() + 3000;
+        native.playSoundFrontend(-1, '3_2_1', 'HUD_MINI_GAME_SOUNDSET', 0);
+
+        let count = 0;
+        const countdownInterval = alt.setInterval(() => {
+            if (count < 3) {
+                native.playSoundFrontend(-1, '3_2_1', 'HUD_MINI_GAME_SOUNDSET', 0);
+            }
+
+            if (count >= 2) {
+                native.playSoundFrontend(-1, 'OOB_Start', 'GTAO_FM_Events_Soundset', 0);
+                alt.clearInterval(countdownInterval);
+                return;
+            }
+
+            count += 1;
+        }, 1000);
+    }
+
+    if (value.release) {
+        releaseEndTime = null;
     }
 
     canisterInfo = value;
@@ -217,7 +244,9 @@ function handleTick() {
         } else {
             if (player.vehicle) {
                 player.blip.pos = { ...player.vehicle.pos };
-            } else {
+            }
+
+            if (!player.vehicle && player.blip) {
                 const pos = player.getSyncedMeta('Position');
                 if (!pos) {
                     continue;
@@ -264,8 +293,16 @@ function handleTick() {
         native.setEntityCollision(player.vehicle.scriptID, true, true);
     }
 
+    modifySpeed();
+    profileCheck();
+
     if (!canisterInfo) {
         return;
+    }
+
+    if (!canisterInfo.release) {
+        const calculatedTime = Math.abs((releaseEndTime - Date.now()) / 1000);
+        drawText2d(`${calculatedTime.toFixed(1)}`, { x: 0.5, y: 0.65 }, 3, 255, 255, 255, 255);
     }
 
     if (alt.Player.local.vehicle) {
@@ -287,7 +324,12 @@ function handleTick() {
         }
     }
 
-    if (canisterInfo.owner && canisterInfo.owner.vehicle && canisterInfo.owner !== alt.Player.local) {
+    if (
+        canisterInfo.owner &&
+        canisterInfo.owner.vehicle &&
+        canisterInfo.owner !== alt.Player.local &&
+        canisterInfo.owner.valid
+    ) {
         const modifiedPosition = { ...canisterInfo.owner.vehicle.pos };
         modifiedPosition.z += 3;
         drawMarker(
@@ -300,6 +342,22 @@ function handleTick() {
             110,
             255,
             100
+        );
+    }
+
+    if (!canisterInfo.owner && canisterInfo.pos) {
+        const modifiedPosition = { ...canisterInfo.pos };
+        modifiedPosition.z += 3;
+        drawMarker(
+            1,
+            modifiedPosition,
+            new alt.Vector3(0, 0, 0),
+            new alt.Vector3(0, 0, 0),
+            new alt.Vector3(0.5, 0.5, 100),
+            190,
+            110,
+            255,
+            255
         );
     }
 
@@ -318,6 +376,32 @@ function handleTick() {
             100
         );
     }
+}
+
+function modifySpeed() {
+    if (!alt.Player.local.vehicle) {
+        return;
+    }
+
+    const speed = native.getEntitySpeed(alt.Player.local.vehicle.scriptID);
+    const newSpeed = `${(speed * (alt.Player.local.isUsingMetric ? 3.6 : 2.236936)).toFixed(0)}`;
+    const text = `${newSpeed} ${alt.Player.local.isUsingMetric ? 'km/h' : 'mp/h'}`;
+    drawText2d(text, { x: 0.5, y: 0.95 }, 0.3, 255, 255, 255, 255);
+
+    if (canisterInfo && canisterInfo.owner === alt.Player.local) {
+        native.setEntityMaxSpeed(alt.Player.local.vehicle.scriptID, 40);
+    } else {
+        native.setEntityMaxSpeed(alt.Player.local.vehicle.scriptID, 45);
+    }
+}
+
+function profileCheck() {
+    if (Date.now() < nextProfileCheck) {
+        return;
+    }
+
+    nextProfileCheck = Date.now() + 5000;
+    alt.Player.local.isUsingMetric = native.getProfileSetting(227);
 }
 
 function removeBlip(player) {

@@ -117,7 +117,9 @@ function handleReady() {
         return;
     }
 
-    view.emit('selection:SetModel', models[0]);
+    alt.setTimeout(() => {
+        view.emit('selection:SetModel', models[0]);
+    }, 500);
 }
 
 function showCursor(value) {
