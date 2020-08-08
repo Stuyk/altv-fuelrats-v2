@@ -1,3 +1,6 @@
 [submodule "resource/altv-discord-auth"]
 	path = resource/altv-discord-auth
 	url = https://github.com/Stuyk/altv-discord-auth
+[submodule "resources/altv-discord-auth"]
+	path = resources/altv-discord-auth
+	url = https://github.com/Stuyk/altv-discord-auth
