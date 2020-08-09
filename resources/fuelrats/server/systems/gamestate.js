@@ -103,6 +103,7 @@ export function handleSetupPlayer(player) {
     }
 
     player.emit('chat:Destroy');
+    player.chatInit = false;
     player.emit('vehicle:Models', currentMapInfo.vehicles, DEFAULT_CONFIG.VEHICLE_SELECT_SPAWN);
     player.setSyncedMeta('FadeScreen', true);
     player.setSyncedMeta('Ready', false);
@@ -294,10 +295,8 @@ function handleUpdates() {
             if (dist <= 5 && nextCanisterPickup < Date.now()) {
                 nextCanisterPickup = Date.now() + 500;
                 currentScoreCount += 1;
-
                 alt.emitClient(null, 'audio:PlayFrontend', 'Whistle', 'DLC_TG_Running_Back_Sounds');
-
-                if (currentScoreCount >= 2) {
+                if (currentScoreCount >= currentMapInfo.maxScore) {
                     currentScoreCount = 0;
                     nextMap();
                 } else {

@@ -22,6 +22,7 @@ import './prototypes/player';
 // Systems
 import './systems/chat';
 import './systems/gamestate';
+import './systems/anticheat';
 
 // Utility
 import './utility/array';

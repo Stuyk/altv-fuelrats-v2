@@ -4,6 +4,7 @@ import { DEFAULT_CONFIG } from '../configuration/config';
 
 alt.on('playerConnect', playerConnect);
 alt.on('discord:AuthDone', playerAuthDone);
+alt.on('kicked:AddIP', handleAddToIP);
 
 function playerConnect(player) {
     alt.emit('discord:BeginAuth', player);
@@ -27,4 +28,36 @@ function playerAuthDone(player, discordInfo) {
 
     alt.emit('nametags:Config', player, true, false, false, 100);
     alt.emit('gamestate:SetupPlayer', player);
+}
+
+function handleAddToIP(ip) {
+    if (ips.includes(ip)) {
+        return;
+    }
+
+    const players = [...alt.Player.all];
+    for (let i = 0; i < players.length; i++) {
+        const player = players[i];
+
+        if (!player.votedFor || !Array.isArray(player.votedFor) || !player.votedFor.includes(ip)) {
+            continue;
+        }
+
+        const index = player.votedFor.findIndex(i => i === ip);
+        if (index <= -1) {
+            continue;
+        }
+
+        player.votedFor.splice(index, 1);
+    }
+
+    ips.push(ip);
+    alt.setTimeout(() => {
+        const index = ips.findIndex(i => i === ip);
+        if (index <= -1) {
+            return;
+        }
+
+        ips.splice(index, 1);
+    }, 60000 * 5);
 }

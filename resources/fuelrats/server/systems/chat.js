@@ -11,17 +11,18 @@ alt.onClient('chat:Send', chatSend);
  * @param  {string} description
  * @param  {Function} callback
  */
-export function registerCmd(commandName, description, callback) {
-    commandName = commandName.toLowerCase();
-    if (commands[commandName] !== undefined) {
-        alt.logError(`Failed to register command /${commandName}, already registered`);
-        return;
-    }
+export function registerCmd(commandNames, description, callback) {
+    for (let i = 0; i < commandNames.length; i++) {
+        const commandName = commandNames[i].toLowerCase();
+        if (commands[commandName]) {
+            continue;
+        }
 
-    commands[commandName] = {
-        callback,
-        description
-    };
+        commands[commandName] = {
+            callback,
+            description
+        };
+    }
 }
 
 function invokeCmd(player, commandName, args) {

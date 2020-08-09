@@ -1,12 +1,18 @@
 /// <reference types="@altv/types-client" />
-import alt from 'alt-client';
+/// <reference types="@altv/types-natives" />
+import alt, { loadModel } from 'alt-client';
 import * as native from 'natives';
 
 alt.onServer('vehicle:SetInto', handleSetIntoVehicle);
 alt.onServer('vehicle:Repair', repairVehicle);
+alt.onServer('vehicle:Flip', handleFlip);
 
 function handleSetIntoVehicle(vehicle) {
     const interval = alt.setInterval(() => {
+        if (!vehicle.valid) {
+            return;
+        }
+
         if (!alt.Player.local.vehicle) {
             native.setPedIntoVehicle(alt.Player.local.scriptID, vehicle.scriptID, -1);
         } else {
@@ -34,4 +40,12 @@ function repairVehicle() {
     }
 
     native.setVehicleFixed(alt.Player.local.vehicle.scriptID);
+}
+
+function handleFlip() {
+    if (!alt.Player.local.vehicle) {
+        return;
+    }
+
+    native.setEntityRotation(alt.Player.local.vehicle.scriptID, 0, 0, 0, 0, 0);
 }
