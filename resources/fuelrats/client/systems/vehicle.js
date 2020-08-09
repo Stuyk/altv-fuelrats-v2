@@ -8,6 +8,10 @@ alt.onServer('vehicle:Repair', repairVehicle);
 alt.onServer('vehicle:Flip', handleFlip);
 
 function handleSetIntoVehicle(vehicle) {
+    if (!vehicle) {
+        return;
+    }
+
     const interval = alt.setInterval(() => {
         if (!vehicle.valid) {
             return;
