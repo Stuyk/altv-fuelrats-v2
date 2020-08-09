@@ -67,7 +67,7 @@ function resetMap() {
 function setupObjective() {
     paused = true;
 
-    const vehicles = [...alt.Player.vehicle];
+    const vehicles = [...alt.Vehicle.all];
     vehicles.forEach(vehicle => {
         if (!vehicle.driver && vehicle.valid && vehicle.destroy) {
             try {
