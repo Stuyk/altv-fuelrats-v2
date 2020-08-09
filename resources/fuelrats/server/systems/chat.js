@@ -4,6 +4,7 @@ import alt from 'alt-server';
 let commands = {};
 
 alt.onClient('chat:Send', chatSend);
+alt.on('chat:Send', chatSend);
 
 /**
  * Register commands for players to use.
@@ -59,14 +60,21 @@ function chatSend(player, msg) {
         return;
     }
 
-    const actualName = player.getSyncedMeta('NAME');
-    alt.log(`[Message] ${actualName}: ${msg}`);
+    let actualName = '';
 
-    // Cleanse Message
-    msg = msg
-        .replace(/</g, '&lt;')
-        .replace(/'/g, '&#39')
-        .replace(/"/g, '&#34');
+    if (player) {
+        const actualName = player.getSyncedMeta('NAME');
+        alt.log(`[Message] ${actualName}: ${msg}`);
 
-    alt.emitClient(null, 'chat:Send', `${actualName} says: ${msg}`);
+        // Cleanse Message
+        msg = msg
+            .replace(/</g, '&lt;')
+            .replace(/'/g, '&#39')
+            .replace(/"/g, '&#34');
+
+        alt.emitClient(null, 'chat:Send', `${actualName} says: ${msg}`);
+        return;
+    }
+
+    alt.emitClient(null, 'chat:Send', msg);
 }

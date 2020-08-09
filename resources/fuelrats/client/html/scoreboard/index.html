@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Discord Auth by Stuyk</title>
+        <link rel="stylesheet/less" type="text/css" href="style.less" />
+    </head>
+    <body>
+        <div id="app">
+            <div class="container">
+                <div v-for="(player, index) in orderPlayers" :key="index" class="player">
+                    <span>{{ player.name }}</span>
+                    <span>Score: {{ player.score }}</span>
+                    <span>{{ player.ping }}ms</span>
+                </div>
+            </div>
+        </div>
+        <script src="../vue.min.js"></script>
+        <script src="../less.min.js"></script>
+        <script src="app.js" type="text/javascript"></script>
+    </body>
+</html>

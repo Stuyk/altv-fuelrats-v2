@@ -7,8 +7,10 @@ import { drawText2d } from '../utility/textdraws';
 
 alt.onServer('player:RemoveBlip', removeBlip);
 
+const url = 'http://resource/client/html/scoreboard/index.html';
 const canisterModel = native.getHashKey('prop_jerrycan_01a');
 const disabledControls = [37, 24, 25, 65, 66, 67, 68, 69, 70, 75, 91, 92, 58];
+let view;
 let interval;
 let canisterObject;
 let canisterBlip;
@@ -94,6 +96,10 @@ function handleCanister(value) {
     }
 
     if (!value.release && !releaseEndTime) {
+        if (view) {
+            view.emit(`scoreboard:Reset`);
+        }
+
         releaseEndTime = Date.now() + 3000;
         native.playSoundFrontend(-1, '3_2_1', 'HUD_MINI_GAME_SOUNDSET', 0);
 
@@ -230,9 +236,35 @@ function handleTick() {
         alt.emit('collision:Test');
     }
 
-    const players = [...alt.Player.all];
+    if (!view) {
+        view = new alt.WebView(url);
+    }
+
+    let players = alt.Player.all
+        .sort((a, b) => {
+            const aScore = a.getSyncedMeta('Score');
+            const bScore = b.getSyncedMeta('Score');
+            return aScore - bScore;
+        })
+        .reverse();
+
+    players = players.filter(p => {
+        if (p.valid && p.getSyncedMeta('Ping') && p.getSyncedMeta('NAME')) {
+            return true;
+        }
+    });
+
     for (let i = 0; i < players.length; i++) {
         const player = players[i];
+
+        if (!player || !player.valid) {
+            continue;
+        }
+
+        const score = player.getSyncedMeta('Score');
+        const name = player.getSyncedMeta('NAME');
+        const ping = player.getSyncedMeta('Ping');
+        view.emit('scoreboard:Set', name, score, ping);
 
         if (!player.blip && player.vehicle) {
             player.blip = new alt.PointBlip(player.pos.x, player.pos.y, player.pos.z);
@@ -302,7 +334,7 @@ function handleTick() {
 
     if (!canisterInfo.release) {
         const calculatedTime = Math.abs((releaseEndTime - Date.now()) / 1000);
-        drawText2d(`${calculatedTime.toFixed(1)}`, { x: 0.5, y: 0.65 }, 3, 255, 255, 255, 255);
+        drawText2d(`${calculatedTime.toFixed(1)}`, { x: 0.5, y: 0.1 }, 1, 190, 110, 255, 255);
     }
 
     if (alt.Player.local.vehicle) {
@@ -376,6 +408,11 @@ function handleTick() {
             100
         );
     }
+
+    if (canisterInfo.expiration) {
+        const ms = Math.floor(Math.abs(Date.now() - canisterInfo.expiration));
+        drawText2d(`${parseMillisecondsIntoReadableTime(ms)}`, { x: 0.5, y: 0.05 }, 0.5, 255, 255, 255, 200);
+    }
 }
 
 function modifySpeed() {
@@ -412,4 +449,23 @@ function removeBlip(player) {
     if (player.blip && player.blip.valid) {
         player.blip.destroy();
     }
+}
+
+function parseMillisecondsIntoReadableTime(milliseconds) {
+    //Get hours from milliseconds
+    var hours = milliseconds / (1000 * 60 * 60);
+    var absoluteHours = Math.floor(hours);
+    var h = absoluteHours > 9 ? absoluteHours : '0' + absoluteHours;
+
+    //Get remainder from hours and convert to minutes
+    var minutes = (hours - absoluteHours) * 60;
+    var absoluteMinutes = Math.floor(minutes);
+    var m = absoluteMinutes > 9 ? absoluteMinutes : '0' + absoluteMinutes;
+
+    //Get remainder from minutes and convert to seconds
+    var seconds = (minutes - absoluteMinutes) * 60;
+    var absoluteSeconds = Math.floor(seconds);
+    var s = absoluteSeconds > 9 ? absoluteSeconds : '0' + absoluteSeconds;
+
+    return m + ':' + s;
 }

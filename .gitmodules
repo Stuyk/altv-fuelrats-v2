@@ -7,3 +7,6 @@
 [submodule "resources/altv-os-nametags"]
 	path = resources/altv-os-nametags
 	url = https://github.com/Stuyk/altv-os-nametags
+[submodule "resources/altv-os-missing-interiors"]
+	path = resources/altv-os-missing-interiors
+	url = https://github.com/jovanivanovic/altv-os-missing-interiors

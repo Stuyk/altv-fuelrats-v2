@@ -25,6 +25,7 @@ function playerAuthDone(player, discordInfo) {
     player.setSyncedMeta('NAME', `(${player.id}) ${discordInfo.username}#${discordInfo.discriminator}`);
     player.setSyncedMeta('Ready', false);
     player.setDateTime(0, 0, 0, 9, 0, 0);
+    player.setSyncedMeta('Score', 0);
 
     alt.emit('nametags:Config', player, true, false, false, 100);
     alt.emit('gamestate:SetupPlayer', player);

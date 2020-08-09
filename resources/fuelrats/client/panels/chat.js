@@ -60,6 +60,10 @@ function handleKeyup(key) {
         return;
     }
 
+    if (!view) {
+        return;
+    }
+
     if (!opened && key === 0x54 && alt.gameControlsEnabled()) {
         opened = true;
         view.emit('openChat', false);

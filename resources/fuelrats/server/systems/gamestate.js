@@ -26,7 +26,8 @@ let canisterInfo = {
     goal: currentMapInfo.goals[0],
     pos: currentMapInfo.canisters[0],
     release: false,
-    spawn: currentMapInfo.spawn
+    spawn: currentMapInfo.spawn,
+    expiration: 0
 };
 
 function nextMap() {
@@ -58,6 +59,7 @@ function resetMap() {
             continue;
         }
 
+        player.setSyncedMeta('Score', 0);
         handleSetupPlayer(player);
     }
 }
@@ -70,6 +72,7 @@ function setupObjective() {
     canisterInfo.goal = currentMapInfo.goals[Math.floor(Math.random() * currentMapInfo.goals.length)];
     canisterInfo.release = false;
     canisterInfo.spawn = currentMapInfo.spawn;
+    canisterInfo.expiration = Date.now() + 60000 * 4;
 
     const currentPlayers = alt.Player.all.filter(p => {
         if (p.isAuthorized && p.getSyncedMeta('Ready') && p.vehicle && p.valid) {
@@ -102,6 +105,7 @@ export function handleSetupPlayer(player) {
         return;
     }
 
+    player.dimension = player.id + 5;
     player.emit('chat:Destroy');
     player.chatInit = false;
     player.emit('vehicle:Models', currentMapInfo.vehicles, DEFAULT_CONFIG.VEHICLE_SELECT_SPAWN);
@@ -151,6 +155,12 @@ export function spawnPlayer(player) {
     player.lastVehicle.customPrimaryColor = { r: 255, g: 255, b: 255, a: 255 };
     player.lastVehicle.customSecondaryColor = { r: 255, g: 255, b: 255, a: 255 };
     player.lastVehicle.player = player;
+
+    if (player.lastVehicle.modKitsCount >= 1) {
+        player.lastVehicle.modKit = 1;
+        player.lastVehicle.setMod(14, Math.floor(Math.random() * 34));
+    }
+
     player.dimension = 0;
     player.setIntoVehicle(player.lastVehicle);
     player.setSyncedMeta('Ready', true);
@@ -269,6 +279,17 @@ function handleUpdates() {
         return;
     }
 
+    if (!canisterInfo) {
+        return;
+    }
+
+    if (Date.now() > canisterInfo.expiration) {
+        canisterInfo.expiration = Date.now() + 60000 * 5;
+        setupObjective();
+        alt.emit('chat:Send', null, `{FF0000} Expiration was reached.`);
+        return;
+    }
+
     for (let i = 0; i < currentPlayers.length; i++) {
         const player = currentPlayers[i];
         player.lastLocation = { ...player.pos };
@@ -300,6 +321,9 @@ function handleUpdates() {
                     currentScoreCount = 0;
                     nextMap();
                 } else {
+                    let currentScore = player.getSyncedMeta('Score');
+                    currentScore += 1;
+                    player.setSyncedMeta('Score', currentScore);
                     setupObjective();
                 }
             }
