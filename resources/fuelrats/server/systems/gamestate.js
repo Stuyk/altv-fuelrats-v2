@@ -155,6 +155,8 @@ export function spawnPlayer(player) {
     player.lastVehicle.customPrimaryColor = { r: 255, g: 255, b: 255, a: 255 };
     player.lastVehicle.customSecondaryColor = { r: 255, g: 255, b: 255, a: 255 };
     player.lastVehicle.player = player;
+    player.lastZPos = null;
+    player.lastPosition = null;
 
     if (player.lastVehicle.modKitsCount >= 1) {
         player.lastVehicle.modKit = 1;
