@@ -67,6 +67,15 @@ function resetMap() {
 function setupObjective() {
     paused = true;
 
+    const vehicles = [...alt.Player.vehicle];
+    vehicles.forEach(vehicle => {
+        if (!vehicle.driver && vehicle.valid && vehicle.destroy) {
+            try {
+                vehicle.destroy();
+            } catch (err) {}
+        }
+    });
+
     canisterInfo.owner = null;
     canisterInfo.pos = currentMapInfo.canisters[Math.floor(Math.random() * currentMapInfo.canisters.length)];
     canisterInfo.goal = currentMapInfo.goals[Math.floor(Math.random() * currentMapInfo.goals.length)];
