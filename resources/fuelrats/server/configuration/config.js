@@ -8,8 +8,8 @@ export const DEFAULT_CONFIG = {
         // Inner City
         {
             vehicles: ['thrax', 'emerus', 'fmj', 'krieger', 'autarch'],
-            maxScore: 3,
-            roundTimer: 60000 * 4,
+            maxScore: 12,
+            roundTimer: 60000 * 6,
             atmosphere: {
                 hour: 8,
                 minute: 0,
@@ -39,7 +39,7 @@ export const DEFAULT_CONFIG = {
         {
             vehicles: ['ardent', 'cheetah2', 'monroe', 'deluxo', 'viseris'],
             maxScore: 12,
-            roundTimer: 60000 * 60,
+            roundTimer: 60000 * 6,
             atmosphere: {
                 hour: 6,
                 minute: 0,
@@ -70,7 +70,7 @@ export const DEFAULT_CONFIG = {
         // Los Santos International
         {
             vehicles: ['t20', 'xa21', 'furia', 'zentorno', 'osiris'],
-            maxScore: 5,
+            maxScore: 6,
             roundTimer: 60000 * 5,
             atmosphere: {
                 hour: 6,
@@ -107,7 +107,7 @@ export const DEFAULT_CONFIG = {
             atmosphere: {
                 hour: 0,
                 minute: 0,
-                weather: 14
+                weather: 2
             },
             spawn: { x: -1660.5889892578125, y: -322.70770263671875, z: 49.3985595703125 },
             canisters: [
