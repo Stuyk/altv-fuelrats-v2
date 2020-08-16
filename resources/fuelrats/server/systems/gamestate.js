@@ -80,8 +80,9 @@ function setupObjective() {
     canisterInfo.pos = currentMapInfo.canisters[Math.floor(Math.random() * currentMapInfo.canisters.length)];
     canisterInfo.goal = currentMapInfo.goals[Math.floor(Math.random() * currentMapInfo.goals.length)];
     canisterInfo.release = false;
+    canisterInfo.releaseTime = Date.now() + 3000;
     canisterInfo.spawn = currentMapInfo.spawn;
-    canisterInfo.expiration = Date.now() + 60000 * 4;
+    canisterInfo.expiration = Date.now() + currentMapInfo.roundTimer;
 
     const currentPlayers = alt.Player.all.filter(p => {
         if (p.isAuthorized && p.getSyncedMeta('Ready') && p.vehicle && p.valid) {
@@ -97,6 +98,7 @@ function setupObjective() {
 
     alt.setTimeout(() => {
         canisterInfo.release = true;
+        canisterInfo.releaseTime = null;
 
         for (let i = 0; i < currentPlayers.length; i++) {
             const player = currentPlayers[i];
@@ -124,6 +126,8 @@ export function handleSetupPlayer(player) {
     player.setSyncedMeta('Frozen', true);
     player.setSyncedMeta('Invisible', true);
     player.setSyncedMeta('Selection', true);
+    player.setSyncedMeta('Camp_Timer', null);
+    player.setSyncedMeta('ReleaseTimer', null);
 
     player.pos = DEFAULT_CONFIG.VEHICLE_SELECT_SPAWN;
 
@@ -166,6 +170,9 @@ export function spawnPlayer(player) {
     player.lastVehicle.player = player;
     player.lastZPos = null;
     player.lastPosition = null;
+
+    player.setDateTime(0, 0, 0, currentMapInfo.atmosphere.hour, currentMapInfo.atmosphere.minute, 0);
+    player.setWeather(currentMapInfo.atmosphere.weather);
 
     if (player.lastVehicle.modKitsCount >= 1) {
         player.lastVehicle.modKit = 1;
@@ -295,15 +302,22 @@ function handleUpdates() {
     }
 
     if (Date.now() > canisterInfo.expiration) {
-        canisterInfo.expiration = Date.now() + 60000 * 5;
+        canisterInfo.expiration = Date.now() + currentMapInfo.roundTimer;
         setupObjective();
-        alt.emit('chat:Send', null, `{FF0000} Expiration was reached.`);
+        alt.emit('chat:Send', null, `{FF0000} Time to score was exceeded.`);
         return;
     }
 
     for (let i = 0; i < currentPlayers.length; i++) {
         const player = currentPlayers[i];
         player.lastLocation = { ...player.pos };
+        player.setSyncedMeta(`Timer`, Math.abs(Date.now() - canisterInfo.expiration));
+
+        if (canisterInfo.releaseTime) {
+            player.setSyncedMeta('ReleaseTimer', Math.abs(Date.now() - canisterInfo.releaseTime));
+        } else {
+            player.setSyncedMeta('ReleaseTimer', null);
+        }
 
         // Handle pickup from ground
         if (canisterInfo.owner === null) {
@@ -314,7 +328,7 @@ function handleUpdates() {
             }
         }
 
-        // Update position if owner exists
+        const goalDist = distance(player.vehicle.pos, canisterInfo.goal);
         if (canisterInfo.owner === player) {
             canisterInfo.pos = player.pos;
 
@@ -323,8 +337,7 @@ function handleUpdates() {
                 break;
             }
 
-            const dist = distance(player.vehicle.pos, canisterInfo.goal);
-            if (dist <= 5 && nextCanisterPickup < Date.now()) {
+            if (goalDist <= 5 && nextCanisterPickup < Date.now()) {
                 nextCanisterPickup = Date.now() + 500;
                 currentScoreCount += 1;
                 alt.emitClient(null, 'audio:PlayFrontend', 'Whistle', 'DLC_TG_Running_Back_Sounds');
@@ -338,6 +351,30 @@ function handleUpdates() {
                     setupObjective();
                 }
             }
+        }
+
+        // Handle Non-Canister Holding Campers
+        if (canisterInfo.owner !== player && goalDist <= 8) {
+            if (!player.campTimer) {
+                player.campTimer = Date.now() + 7500;
+                player.setSyncedMeta('Camp_Timer', Math.abs(player.campTimer - Date.now()));
+            } else {
+                player.setSyncedMeta('Camp_Timer', Math.abs(player.campTimer - Date.now()));
+            }
+
+            if (Date.now() > player.campTimer) {
+                player.setSyncedMeta('Camp_Timer', null);
+                player.campTimer = null;
+
+                if (player.vehicle && player.valid && player.vehicle.valid) {
+                    player.vehicle.pos = currentMapInfo.spawn;
+                }
+            }
+        }
+
+        if (canisterInfo.owner !== player && goalDist > 8) {
+            player.campTimer = null;
+            player.setSyncedMeta('Camp_Timer', null);
         }
 
         // Update players with new canister data

@@ -161,6 +161,12 @@ function highlightChat() {
 }
 
 function appendMessage(text) {
+    if (!text) {
+        return;
+    }
+
+    text = `${text}`;
+
     if (text.includes('{') && text.includes('}')) {
         text = colorify(text);
     }

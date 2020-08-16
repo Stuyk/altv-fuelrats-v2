@@ -332,9 +332,27 @@ function handleTick() {
         return;
     }
 
-    if (!canisterInfo.release) {
-        const calculatedTime = Math.abs((releaseEndTime - Date.now()) / 1000);
-        drawText2d(`${calculatedTime.toFixed(1)}`, { x: 0.5, y: 0.1 }, 1, 190, 110, 255, 255);
+    if (!canisterInfo.release && alt.Player.local.getSyncedMeta('ReleaseTimer')) {
+        const timeLeft = alt.Player.local.getSyncedMeta('ReleaseTimer');
+        const calculatedTime = timeLeft / 1000;
+
+        if (calculatedTime >= 0) {
+            drawText2d(`${calculatedTime.toFixed(1)}s`, { x: 0.5, y: 0.1 }, 1, 190, 110, 255, 255);
+        }
+    }
+
+    if (alt.Player.local.getSyncedMeta('Camp_Timer')) {
+        const timeLeft = alt.Player.local.getSyncedMeta('Camp_Timer');
+        const calculatedTime = timeLeft / 1000;
+
+        if (calculatedTime >= 0) {
+            drawText2d(`Do Not Camp! ${calculatedTime.toFixed(1)}`, { x: 0.5, y: 0.85 }, 0.65, 255, 0, 0, 255);
+        }
+    }
+
+    if (alt.Player.local.getSyncedMeta('ReleaseTimer')) {
+        const timeLeft = alt.Player.local.getSyncedMeta('ReleaseTimer');
+        const calculatedTime = timeLeft / 1000;
     }
 
     if (alt.Player.local.vehicle) {
@@ -409,9 +427,9 @@ function handleTick() {
         );
     }
 
-    if (canisterInfo.expiration) {
-        const ms = Math.floor(Math.abs(Date.now() - canisterInfo.expiration));
-        drawText2d(`${parseMillisecondsIntoReadableTime(ms)}`, { x: 0.5, y: 0.05 }, 0.5, 255, 255, 255, 200);
+    if (canisterInfo.expiration && alt.Player.local.getSyncedMeta('Timer')) {
+        const timeLeft = alt.Player.local.getSyncedMeta('Timer');
+        drawText2d(`${parseMillisecondsIntoReadableTime(timeLeft)}`, { x: 0.5, y: 0.05 }, 0.5, 255, 255, 255, 200);
     }
 }
 

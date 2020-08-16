@@ -11,10 +11,15 @@ const app = new Vue({
     computed: {
         orderPlayers() {
             return this.players
+                .slice()
                 .sort((a, b) => {
                     if (a.score === b.score) {
-                        return a.name - b.name;
+                        return a.name.length - b.name.length;
                     }
+
+                    // if (a.score > b.score) {
+                    //     return 1;
+                    // }
 
                     return a.score - b.score;
                 })
@@ -46,8 +51,12 @@ const app = new Vue({
             alt.on('scoreboard:Reset', this.resetScore);
             alt.emit('selection:Ready');
         } else {
-            this.setScore('Johnny#4219840211', 1, 25);
-            this.setScore('Bobby', 2, 25);
+            setInterval(() => {
+                this.setScore('Johnny#4219840211', 1, Math.floor(Math.random() * 100));
+                this.setScore('Gildafdsfdsfdsffdsfsdds', 1, Math.floor(Math.random() * 200));
+                this.setScore('Klyde', 1, Math.floor(Math.random() * 200));
+                this.setScore('Bonny', 5, Math.floor(Math.random() * 200));
+            }, 250);
         }
     }
 });
