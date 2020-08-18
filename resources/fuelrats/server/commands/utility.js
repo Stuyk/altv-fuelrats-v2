@@ -4,6 +4,8 @@ import { registerCmd } from '../systems/chat';
 import { handleSetupPlayer } from '../systems/gamestate';
 
 const lastVotes = {};
+let goals = [];
+let canisters = [];
 
 registerCmd(['votekick'], 'votekick [id]', handleKick);
 registerCmd(['coords'], 'Returns current coordinates to chat and console.', getCoords);
@@ -11,6 +13,11 @@ registerCmd(['players'], 'Returns current player count.', getPlayerCount);
 registerCmd(['dc'], '/dc', forceDisconnect);
 registerCmd(['spawn', 'flip', 'respawn'], 'Flip your vehicle upright.', flipVehicle);
 registerCmd(['car', 'swapcar', 'spawncar', 'changevehicle', 'vehicle'], 'Change your fucking vehicle.', swapCar);
+registerCmd(['addg'], 'add a goal', handleAddGoal);
+registerCmd(['addc'], 'add canister', handleAddCanister);
+registerCmd(['clearg'], '', handleClearGoals);
+registerCmd(['clearc'], '', handleClearCanisters);
+registerCmd(['print'], '', handlePrintData);
 
 function getCoords(player) {
     const coords = player.pos;
@@ -99,4 +106,47 @@ function handleKick(player, args) {
         target.kick();
         return;
     }
+}
+
+function handleAddGoal(player) {
+    goals.push(player.pos);
+    player.send(`Added a goal position.`);
+
+    alt.Player.all.forEach(player => {
+        player.setSyncedMeta('DEBUG_GOALS', goals);
+    });
+}
+
+function handleAddCanister(player) {
+    canisters.push(player.pos);
+    player.send(`Added a canister position.`);
+
+    alt.Player.all.forEach(player => {
+        player.setSyncedMeta('DEBUG_CANISTERS', canisters);
+    });
+}
+
+function handleClearGoals(player) {
+    goals = [];
+    player.send(`Goals were cleared.`);
+
+    alt.Player.all.forEach(player => {
+        player.setSyncedMeta('DEBUG_GOALS', goals);
+    });
+}
+
+function handleClearCanisters(player) {
+    canisters = [];
+    player.send(`Canisters were cleared.`);
+
+    alt.Player.all.forEach(player => {
+        player.setSyncedMeta('DEBUG_CANISTERS', canisters);
+    });
+}
+
+function handlePrintData(player) {
+    console.log('GOALS');
+    console.log(JSON.stringify(goals));
+    console.log('CANISTERS');
+    console.log(JSON.stringify(canisters));
 }

@@ -20,6 +20,7 @@ let homeBlip;
 let releaseEndTime = null;
 let nextCollisionCheck = Date.now() + 1000;
 let nextProfileCheck = Date.now() + 1000;
+let debug = true;
 
 native.requestModel(canisterModel);
 
@@ -222,6 +223,43 @@ function handleCanister(value) {
 }
 
 function handleTick() {
+    if (debug) {
+        const canisters = alt.Player.local.getSyncedMeta('DEBUG_CANISTERS');
+        const goals = alt.Player.local.getSyncedMeta('DEBUG_GOALS');
+
+        if (Array.isArray(canisters)) {
+            for (let i = 0; i < canisters.length; i++) {
+                drawMarker(
+                    1,
+                    canisters[i],
+                    new alt.Vector3(0, 0, 0),
+                    new alt.Vector3(0, 0, 0),
+                    new alt.Vector3(1, 1, 1),
+                    255,
+                    255,
+                    0,
+                    255
+                );
+            }
+        }
+
+        if (Array.isArray(goals)) {
+            for (let i = 0; i < goals.length; i++) {
+                drawMarker(
+                    4,
+                    goals[i],
+                    new alt.Vector3(0, 0, 0),
+                    new alt.Vector3(0, 0, 0),
+                    new alt.Vector3(1, 1, 1),
+                    255,
+                    0,
+                    0,
+                    255
+                );
+            }
+        }
+    }
+
     for (let i = 0; i < disabledControls.length; i++) {
         native.disableControlAction(0, disabledControls[i], true);
     }

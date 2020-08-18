@@ -11,6 +11,12 @@ function playerConnect(player) {
     player.dimension = player.id + 5;
     player.setSyncedMeta('FadeScreen', true);
     player.setSyncedMeta('Frozen', true);
+    player.setSyncedMeta('Ready', false);
+    player.setSyncedMeta('Canister', null);
+    player.setSyncedMeta('Invisible', false);
+    player.setSyncedMeta('Selection', false);
+    player.setSyncedMeta('Camp_Timer', null);
+    player.setSyncedMeta('ReleaseTimer', null);
 }
 
 function playerAuthDone(player, discordInfo) {
