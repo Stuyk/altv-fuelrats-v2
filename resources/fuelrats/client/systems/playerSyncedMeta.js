@@ -20,7 +20,7 @@ let homeBlip;
 let releaseEndTime = null;
 let nextCollisionCheck = Date.now() + 1000;
 let nextProfileCheck = Date.now() + 1000;
-let debug = true;
+let debug = false;
 
 native.requestModel(canisterModel);
 
